@@ -26,6 +26,7 @@ char pluginPath[512];
 std::string pluginID;
 
 bool enabled = false;
+bool canEnable = false;
 
 int DOJPlugin::init() {
 	console.info("Initialization");
@@ -71,18 +72,35 @@ void DOJPlugin::proccessCommand(uint64 serverConnectionHandlerID, std::string da
 }
 
 /************************************SOUND HANDLERS*************************************************/
-
 void DOJPlugin::onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID) {
 	if (!enabled)
 		return;
-
 	console.info("Talk status change from ID: " + std::to_string(clientID));
 
 	anyID myID;
 	ts3Functions->getClientID(serverConnectionHandlerID, &myID);
 	if(clientID == myID) {
-		if (status == STATUS_TALKING)
-			playWaveFile("mic_click_on");
+		if (status == STATUS_TALKING) {
+			if (clock() % 5 == 0 || clock() % 3 == 0 || clock() % 7 == 0) {
+				playWaveFile("MotorolaTalkQuery2");
+				clock_t waitTime = clock();
+				while (waitTime + 400 > clock());
+				playWaveFile("mic_click_on");
+
+			}
+			else if (clock() % 2 == 0) {
+				playWaveFile("mic_click_on");
+	
+			}
+			else {
+				playWaveFile("MotorolaTalkQuery");
+				clock_t waitTime = clock();
+				while (waitTime + 200 > clock());
+				playWaveFile("mic_click_on");
+			}
+				
+
+		}
 		else if (status == STATUS_NOT_TALKING)
 			playWaveFile("mic_click_off");
 	}
@@ -250,6 +268,7 @@ void playWaveFile(std::string fileNameWithoutExtension) {
 		console.error("Sound file failure: " + std::to_string(errorOut));
 	}
 }
+
 
 void pluginDisable(uint64 serverConnectionHandlerID) {
 	console.warning("Plugin disabled");
